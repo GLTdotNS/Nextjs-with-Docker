@@ -23,7 +23,7 @@ export default function Home() {
   };
 
   const updateTask = async (id: number) => {
-    const newText = prompt("New text?");
+    const newText = prompt("New teaxt?");
     if (!newText) return;
 
     await fetch("/api/update", {
@@ -60,10 +60,12 @@ export default function Home() {
 
       <ul >
         {tasks.map((t) => (
-          <li className="flex flex-row gap-4" key={t.id}>
-            {t.text}
+          <li className="flex mt-2 flex-row items-center gap-4" key={t.id}>
+              <span className=" bg-red-300 w-full">
+                {t.text}
+              </span>
 
-            <button onClick={() => updateTask(t.id)}>Edit</button>
+            <button className="p-2 bg-green-300 " onClick={() => updateTask(t.id)}>Edit</button>
             <button onClick={() => deleteTask(t.id)}>Delete</button>
           </li>
         ))}
