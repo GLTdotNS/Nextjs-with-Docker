@@ -1,52 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [text, setText] = useState("");
 
-  const fetchData = async () => {
-    setLoading(true);
-
-    const res = await fetch("/api/hello");
+  const loadTasks = async () => {
+    const res = await fetch("/api/tasks");
     const data = await res.json();
-
-    setMessage(data.message);
-    setLoading(false);
+    setTasks(data);
   };
 
-  return (
-    <main style={styles.container}>
-      <button style={styles.button} onClick={fetchData}>
-        {loading ? "Loading..." : "Fetch Hello"}
-      </button>
+  const addTask = async () => {
+    await fetch("/api/add", {
+      method: "POST",
+      body: JSON.stringify({ text })
+    });
 
-      {message && <div style={styles.popup}>{message}</div>}
+    setText("");
+    loadTasks();
+  };
+
+  const updateTask = async (id: number) => {
+    const newText = prompt("New text?");
+    if (!newText) return;
+
+    await fetch("/api/update", {
+      method: "PUT",
+      body: JSON.stringify({ id, text: newText })
+    });
+
+    loadTasks();
+  };
+
+  const deleteTask = async (id: number) => {
+    await fetch(`/api/delete?id=${id}`, {
+      method: "DELETE"
+    });
+
+    loadTasks();
+  };
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  return (
+    <main style={{ padding: 20 }}>
+      <h1>CRUD App 🚀</h1>
+
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="New task"
+      />
+
+      <button onClick={addTask}>Add</button>
+
+      <ul >
+        {tasks.map((t) => (
+          <li className="flex flex-row gap-4" key={t.id}>
+            {t.text}
+
+            <button onClick={() => updateTask(t.id)}>Edit</button>
+            <button onClick={() => deleteTask(t.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "20px",
-    fontFamily: "sans-serif",
-  },
-  button: {
-    padding: "12px 20px",
-    borderRadius: "8px",
-    cursor: "pointer",
-  },
-  popup: {
-    marginTop: "20px",
-    padding: "10px 15px",
-    background: "black",
-    color: "white",
-    borderRadius: "8px",
-  },
-};
